@@ -3,7 +3,6 @@
 import {
 	cancelOrdinalListing,
 	createContext,
-	sellOrdinal,
 	type WalletOutput,
 } from "@1sat/actions";
 import { readAssetIdTag } from "@1sat/types";
@@ -16,7 +15,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+
 import { useSound } from "@/hooks/use-sound";
 import { useWalletToolbox } from "@/providers/wallet-toolbox-provider";
 
@@ -37,7 +36,6 @@ export const ListOrdinalDialog = ({
 	const { wallet, services, chain, depositAddress, refreshBalance } =
 		useWalletToolbox();
 	const { play } = useSound();
-	const [priceBsv, setPriceBsv] = useState("");
 	const [status, setStatus] = useState<"idle" | "busy" | "error">("idle");
 	const [error, setError] = useState("");
 
@@ -56,18 +54,10 @@ export const ListOrdinalDialog = ({
 			});
 			const result = listed
 				? await cancelOrdinalListing.execute(ctx, { id })
-				: await (() => {
-						const satoshis = Math.round(
-							Number.parseFloat(priceBsv) * 100_000_000,
+				: (() => {
+						throw new Error(
+							"Listing creation is deprecated pending a replacement contract. Existing listings can still be cancelled or bought.",
 						);
-						if (!Number.isFinite(satoshis) || satoshis <= 0) {
-							throw new Error("Enter a valid price");
-						}
-						return sellOrdinal.execute(ctx, {
-							id,
-							price: satoshis,
-							payAddress: depositAddress,
-						});
 					})();
 			if (result.error) {
 				setStatus("error");
@@ -91,7 +81,6 @@ export const ListOrdinalDialog = ({
 		depositAddress,
 		listed,
 		ordinal,
-		priceBsv,
 		play,
 		refreshBalance,
 		onOpenChange,
@@ -110,15 +99,10 @@ export const ListOrdinalDialog = ({
 						{ordinal.outpoint}
 					</p>
 					{!listed && (
-						<Input
-							aria-label="Listing price in BSV"
-							type="number"
-							min="0"
-							step="0.00000001"
-							placeholder="Price in BSV"
-							value={priceBsv}
-							onChange={(e) => setPriceBsv(e.target.value)}
-						/>
+						<p className="text-xs text-muted-foreground">
+							Listing creation is deprecated pending a replacement contract.
+							Existing listings can still be cancelled or bought.
+						</p>
 					)}
 					{error && (
 						<p className="text-xs text-destructive break-all" role="alert">
@@ -127,7 +111,7 @@ export const ListOrdinalDialog = ({
 					)}
 					<Button
 						onClick={run}
-						disabled={status === "busy" || (!listed && !priceBsv)}
+						disabled={status === "busy" || !listed}
 						variant={listed ? "destructive" : "default"}
 					>
 						{status === "busy" ? (
