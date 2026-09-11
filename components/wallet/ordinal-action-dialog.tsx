@@ -15,6 +15,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSound } from "@/hooks/use-sound";
+import {
+	LISTING_CREATE_OFF,
+	ORDLOCK_LISTING_CREATE,
+} from "@/lib/ordlock-listing";
 import { reportDiagnostic } from "@/lib/runtime-diagnostics";
 import {
 	executeOrdinalOperation,
@@ -74,13 +78,14 @@ export function OrdinalActionDialog({
 		destinationKind,
 		chain,
 	);
+	const sellEnabled = ORDLOCK_LISTING_CREATE && kind === "sell";
 	const canSubmit =
 		!!oneSatContext &&
 		hasCompleteIds &&
 		!busy &&
 		((kind === "send" && destinationIsValid) ||
 			(kind === "burn" && burnConfirmation === "BURN") ||
-			(kind === "sell" && satoshiPrice !== null) ||
+			(sellEnabled && satoshiPrice !== null) ||
 			kind === "cancel");
 
 	const reset = useCallback(() => {
@@ -126,6 +131,10 @@ export function OrdinalActionDialog({
 			if (burnConfirmation !== "BURN") return;
 			operation = { kind, ids } as const;
 		} else if (kind === "sell") {
+			if (!ORDLOCK_LISTING_CREATE) {
+				setError(LISTING_CREATE_OFF);
+				return;
+			}
 			if (satoshiPrice === null || ids.length !== 1) {
 				setError("Enter a positive whole-satoshi price for one ordinal.");
 				return;
@@ -252,21 +261,27 @@ export function OrdinalActionDialog({
 					</div>
 				)}
 
-				{kind === "sell" && (
-					<div className="space-y-2">
-						<Label htmlFor="ordinal-price">Price (satoshis)</Label>
-						<Input
-							id="ordinal-price"
-							inputMode="numeric"
-							placeholder="Whole satoshis only"
-							value={price}
-							onChange={(event) => setPrice(event.target.value)}
-						/>
-						<p className="text-xs text-muted-foreground">
-							The integer shown here is passed unchanged to the OrdLock action.
+				{kind === "sell" &&
+					(ORDLOCK_LISTING_CREATE ? (
+						<div className="space-y-2">
+							<Label htmlFor="ordinal-price">Price (satoshis)</Label>
+							<Input
+								id="ordinal-price"
+								inputMode="numeric"
+								placeholder="Whole satoshis only"
+								value={price}
+								onChange={(event) => setPrice(event.target.value)}
+							/>
+							<p className="text-xs text-muted-foreground">
+								The integer shown here is passed unchanged to the OrdLock
+								action.
+							</p>
+						</div>
+					) : (
+						<p className="text-sm text-muted-foreground" role="status">
+							{LISTING_CREATE_OFF}
 						</p>
-					</div>
-				)}
+					))}
 
 				{kind === "burn" && (
 					<div className="space-y-2 rounded-md border border-destructive/50 bg-destructive/5 p-3">

@@ -18,6 +18,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useSound } from "@/hooks/use-sound";
+import {
+	LISTING_CREATE_OFF,
+	ORDLOCK_LISTING_CREATE,
+} from "@/lib/ordlock-listing";
 import { useWalletToolbox } from "@/providers/wallet-toolbox-provider";
 
 export const isListed = (output: WalletOutput): boolean =>
@@ -42,9 +46,15 @@ export const ListOrdinalDialog = ({
 	const [error, setError] = useState("");
 
 	const listed = isListed(ordinal);
+	const canCreate = ORDLOCK_LISTING_CREATE && !listed;
 
 	const run = useCallback(async () => {
 		if (!wallet || !depositAddress) return;
+		if (!listed && !ORDLOCK_LISTING_CREATE) {
+			setStatus("error");
+			setError(LISTING_CREATE_OFF);
+			return;
+		}
 		setStatus("busy");
 		setError("");
 		try {
@@ -102,14 +112,18 @@ export const ListOrdinalDialog = ({
 			<DialogContent className="max-w-sm">
 				<DialogHeader>
 					<DialogTitle>
-						{listed ? "Cancel listing" : "List for sale"}
+						{listed
+							? "Cancel listing"
+							: canCreate
+								? "List for sale"
+								: "Listing create disabled"}
 					</DialogTitle>
 				</DialogHeader>
 				<div className="flex flex-col gap-3">
 					<p className="text-xs font-mono text-muted-foreground break-all">
 						{ordinal.outpoint}
 					</p>
-					{!listed && (
+					{canCreate && (
 						<Input
 							aria-label="Listing price in BSV"
 							type="number"
@@ -120,33 +134,40 @@ export const ListOrdinalDialog = ({
 							onChange={(e) => setPriceBsv(e.target.value)}
 						/>
 					)}
+					{!listed && !canCreate && (
+						<p className="text-xs text-muted-foreground" role="status">
+							{LISTING_CREATE_OFF}
+						</p>
+					)}
 					{error && (
 						<p className="text-xs text-destructive break-all" role="alert">
 							{error}
 						</p>
 					)}
-					<Button
-						onClick={run}
-						disabled={status === "busy" || (!listed && !priceBsv)}
-						variant={listed ? "destructive" : "default"}
-					>
-						{status === "busy" ? (
-							<>
-								<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-								{listed ? "Cancelling..." : "Listing..."}
-							</>
-						) : listed ? (
-							<>
-								<X className="w-4 h-4 mr-2" />
-								Cancel listing
-							</>
-						) : (
-							<>
-								<Tag className="w-4 h-4 mr-2" />
-								List for sale
-							</>
-						)}
-					</Button>
+					{(listed || canCreate) && (
+						<Button
+							onClick={run}
+							disabled={status === "busy" || (!listed && !priceBsv)}
+							variant={listed ? "destructive" : "default"}
+						>
+							{status === "busy" ? (
+								<>
+									<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+									{listed ? "Cancelling..." : "Listing..."}
+								</>
+							) : listed ? (
+								<>
+									<X className="w-4 h-4 mr-2" />
+									Cancel listing
+								</>
+							) : (
+								<>
+									<Tag className="w-4 h-4 mr-2" />
+									List for sale
+								</>
+							)}
+						</Button>
+					)}
 				</div>
 			</DialogContent>
 		</Dialog>

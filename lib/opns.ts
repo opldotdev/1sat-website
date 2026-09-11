@@ -24,6 +24,10 @@ import {
 	searchActiveOrdinalListings,
 } from "@/lib/ordinal-marketplace";
 import {
+	LISTING_CREATE_OFF,
+	ORDLOCK_LISTING_CREATE,
+} from "@/lib/ordlock-listing";
+import {
 	type ListingData,
 	listingFromOutput,
 	toStackOutpoint,
@@ -265,6 +269,9 @@ export async function executeOwnedOpnsOperation(
 				counterparty: operation.counterparty,
 			});
 		case "sell":
+			if (!ORDLOCK_LISTING_CREATE) {
+				return { error: LISTING_CREATE_OFF };
+			}
 			return sellOpns.execute(ctx, {
 				id: operation.id,
 				price: operation.price,

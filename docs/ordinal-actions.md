@@ -8,7 +8,7 @@ construct a second wallet client, or call a legacy ordinal endpoint.
 | --- | --- | --- |
 | Send one or many | `sendOrdinals` | One transfer per wallet `id:` tag, with either a P2PKH address or compressed counterparty identity key |
 | Burn one or many | `burnOrdinals` | Wallet `id:` tags after a review list and typed `BURN` confirmation |
-| List one | `sellOrdinal` | One wallet `id:` tag and a positive integer satoshi price |
+| List one | `sellOrdinal` | Disabled (OPL-4694). Create UI and dispatch are off. |
 | Cancel one listing | `cancelOrdinalListing` | The listed output's wallet `id:` tag |
 
 Listed outputs are identified only by the current `ordlock` tag. Outputs that
@@ -16,10 +16,8 @@ predate wallet asset IDs remain visible but cannot be submitted; refreshing the
 wallet or migrating them is required. The UI does not guess an ID from an
 outpoint.
 
-Prices are entered in satoshis and parsed with `BigInt` before conversion to a
-safe JavaScript integer. Decimal BSV values, exponents, zero, negative values,
-and values above `Number.MAX_SAFE_INTEGER` are rejected, so a displayed integer
-is passed unchanged to `sellOrdinal`.
+Prices remain parsed as exact satoshis, but listing create is currently off
+(`ORDLOCK_LISTING_CREATE`). Buy and cancel of existing listings stay available.
 
 Send and burn operate only on unlisted items. A listing must first be cancelled
 through the installed OrdLock action. Every transaction is reviewed before the

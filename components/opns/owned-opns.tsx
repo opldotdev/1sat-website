@@ -19,6 +19,10 @@ import {
 	opnsAssetId,
 	ownedOpnsName,
 } from "@/lib/opns";
+import {
+	LISTING_CREATE_OFF,
+	ORDLOCK_LISTING_CREATE,
+} from "@/lib/ordlock-listing";
 import { getDisplayOutpoint } from "@/lib/wallet/wallet-output-utils";
 import { useWalletToolbox } from "@/providers/wallet-toolbox-provider";
 
@@ -113,12 +117,19 @@ export function OwnedOpns() {
 						Wallet-owned OpNS basket rows. Every action revalidates the row
 						before requesting authorization.
 					</p>
-					{!marketAvailable && !stackFeatures.isPending && (
+					{!ORDLOCK_LISTING_CREATE ? (
 						<p className="mt-1 text-xs text-amber-300" role="status">
-							New listings are disabled because Market capability is
-							unavailable. Existing wallet OrdLock cancellation remains
-							available.
+							{LISTING_CREATE_OFF}
 						</p>
+					) : (
+						!marketAvailable &&
+						!stackFeatures.isPending && (
+							<p className="mt-1 text-xs text-amber-300" role="status">
+								New listings are disabled because Market capability is
+								unavailable. Existing wallet OrdLock cancellation remains
+								available.
+							</p>
+						)
 					)}
 				</div>
 				<div className="flex gap-2">
@@ -211,14 +222,16 @@ export function OwnedOpns() {
 											Cancel listing
 										</Button>
 									) : (
-										<Button
-											size="sm"
-											variant="outline"
-											disabled={!id || !marketAvailable}
-											onClick={() => setAction({ kind: "sell", output })}
-										>
-											List for sale
-										</Button>
+										ORDLOCK_LISTING_CREATE && (
+											<Button
+												size="sm"
+												variant="outline"
+												disabled={!id || !marketAvailable}
+												onClick={() => setAction({ kind: "sell", output })}
+											>
+												List for sale
+											</Button>
+										)
 									)}
 								</div>
 							</div>

@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 import type { OneSatContext, WalletOutput } from "@1sat/actions";
 import { PrivateKey } from "@bsv/sdk";
+import { LISTING_CREATE_OFF } from "@/lib/ordlock-listing";
 import {
 	executeOrdinalOperation,
 	isOrdinalListed,
@@ -70,7 +71,7 @@ describe("ordinal action inputs", () => {
 });
 
 describe("canonical ordinal action dispatch", () => {
-	it("passes exact send, burn, sell and cancel inputs", async () => {
+	it("passes exact send, burn and cancel inputs; sell create stays off", async () => {
 		const calls: Array<{ action: string; input: unknown }> = [];
 		const actions: OrdinalActionSet = {
 			send: async (_ctx, input) => {
@@ -107,10 +108,13 @@ describe("canonical ordinal action dispatch", () => {
 			{ kind: "burn", ids: ["one", "two"] },
 			actions,
 		);
-		await executeOrdinalOperation(
-			ctx,
-			{ kind: "sell", id: "one", price: 123_456_789 },
-			actions,
+		assert.deepEqual(
+			await executeOrdinalOperation(
+				ctx,
+				{ kind: "sell", id: "one", price: 123_456_789 },
+				actions,
+			),
+			{ error: LISTING_CREATE_OFF },
 		);
 		await executeOrdinalOperation(ctx, { kind: "cancel", id: "one" }, actions);
 
@@ -125,7 +129,6 @@ describe("canonical ordinal action dispatch", () => {
 				},
 			},
 			{ action: "burn", input: { ids: ["one", "two"] } },
-			{ action: "sell", input: { id: "one", price: 123_456_789 } },
 			{ action: "cancel", input: { id: "one" } },
 		]);
 	});
@@ -162,5 +165,7 @@ describe("canonical ordinal action dispatch", () => {
 			source,
 			/@\/providers\/wallet-provider|createContext\(|wallet-storage|wallet-backup|indexedDB|rootKey|seedPhrase/,
 		);
+		assert.match(source, /ORDLOCK_LISTING_CREATE/);
+		assert.match(source, /Cancel listing/);
 	});
 });

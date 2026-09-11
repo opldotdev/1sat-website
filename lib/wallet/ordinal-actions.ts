@@ -10,6 +10,10 @@ import {
 import { readAssetIdTag } from "@1sat/types";
 import { PublicKey } from "@bsv/sdk";
 import { isP2pkhAddressForChain } from "@/components/wallet/wallet-home-utils";
+import {
+	LISTING_CREATE_OFF,
+	ORDLOCK_LISTING_CREATE,
+} from "@/lib/ordlock-listing";
 
 const POSITIVE_INTEGER = /^[1-9]\d*$/;
 
@@ -119,6 +123,9 @@ export async function executeOrdinalOperation(
 		case "burn":
 			return actions.burn(ctx, { ids: operation.ids });
 		case "sell":
+			if (!ORDLOCK_LISTING_CREATE) {
+				return { error: LISTING_CREATE_OFF };
+			}
 			return actions.sell(ctx, {
 				id: operation.id,
 				price: operation.price,

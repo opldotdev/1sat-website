@@ -8,7 +8,6 @@ import {
 	Flame,
 	RefreshCw,
 	Send,
-	Tag,
 	X,
 } from "lucide-react";
 import Image from "next/image";
@@ -24,6 +23,10 @@ import {
 } from "@/components/wallet/ordinal-action-dialog";
 import { OrdinalsGridSkeleton } from "@/components/wallet/ordinals-grid-skeleton";
 import { useOrdinalMetadata } from "@/hooks/use-ordinal-metadata";
+import {
+	LISTING_CREATE_OFF,
+	ORDLOCK_LISTING_CREATE,
+} from "@/lib/ordlock-listing";
 import { isOrdinalListed, ordinalAssetId } from "@/lib/wallet/ordinal-actions";
 import { getOrdinalPresentation } from "@/lib/wallet/ordinal-presentation";
 import { getDisplayOutpoint } from "@/lib/wallet/wallet-output-utils";
@@ -79,7 +82,8 @@ export function OrdinalsGrid() {
 		selectionIsCurrent &&
 		selectedOrdinals.length === 1 &&
 		selectedListed.length === 1;
-	const oneUnlisted = onlyUnlisted && selectedOrdinals.length === 1;
+	const oneUnlisted =
+		ORDLOCK_LISTING_CREATE && onlyUnlisted && selectedOrdinals.length === 1;
 
 	const toggleSelection = useCallback((outpoint: string) => {
 		setSelectedOutpoints((previous) => {
@@ -146,15 +150,16 @@ export function OrdinalsGrid() {
 						<Send className="mr-2 size-4" />
 						Send
 					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						disabled={!oneUnlisted}
-						onClick={() => setDialogKind("sell")}
-					>
-						<Tag className="mr-2 size-4" />
-						List
-					</Button>
+					{ORDLOCK_LISTING_CREATE && (
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={!oneUnlisted}
+							onClick={() => setDialogKind("sell")}
+						>
+							List
+						</Button>
+					)}
 					<Button
 						variant="outline"
 						size="sm"
@@ -184,6 +189,12 @@ export function OrdinalsGrid() {
 					The wallet changed after this selection was made. Refresh and select
 					the items again; no action has been submitted.
 				</div>
+			)}
+
+			{!ORDLOCK_LISTING_CREATE && (
+				<p className="text-sm text-muted-foreground" role="status">
+					{LISTING_CREATE_OFF}
+				</p>
 			)}
 
 			{selectedListed.length > 0 && selectedUnlisted.length > 0 && (

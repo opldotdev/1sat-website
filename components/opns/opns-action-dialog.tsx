@@ -26,6 +26,10 @@ import {
 	ownedOpnsName,
 	requireCurrentOwnedOpns,
 } from "@/lib/opns";
+import {
+	LISTING_CREATE_OFF,
+	ORDLOCK_LISTING_CREATE,
+} from "@/lib/ordlock-listing";
 import { reportDiagnostic } from "@/lib/runtime-diagnostics";
 import {
 	type OrdinalDestinationKind,
@@ -104,7 +108,11 @@ export function OpnsActionDialog({
 			case "send":
 				return destinationValid;
 			case "sell":
-				return satoshiPrice !== null && !isOpnsListed(output);
+				return (
+					ORDLOCK_LISTING_CREATE &&
+					satoshiPrice !== null &&
+					!isOpnsListed(output)
+				);
 			case "cancel":
 				return isOpnsListed(output);
 			case "unpublish":
@@ -151,6 +159,7 @@ export function OpnsActionDialog({
 						: { counterparty: destination.trim() }),
 				};
 			case "sell":
+				if (!ORDLOCK_LISTING_CREATE) return null;
 				return { kind, id, price: satoshiPrice as number };
 			case "cancel":
 				return { kind, id };
@@ -292,23 +301,28 @@ export function OpnsActionDialog({
 							</>
 						)}
 
-						{kind === "sell" && (
-							<div className="space-y-2">
-								<Label htmlFor="opns-price">Listing price (satoshis)</Label>
-								<Input
-									id="opns-price"
-									inputMode="numeric"
-									value={price}
-									onChange={(event) => setPrice(event.target.value)}
-								/>
-								{price && satoshiPrice === null && (
-									<p className="text-sm text-destructive" role="alert">
-										Enter a positive whole-satoshi price within the safe integer
-										range.
-									</p>
-								)}
-							</div>
-						)}
+						{kind === "sell" &&
+							(ORDLOCK_LISTING_CREATE ? (
+								<div className="space-y-2">
+									<Label htmlFor="opns-price">Listing price (satoshis)</Label>
+									<Input
+										id="opns-price"
+										inputMode="numeric"
+										value={price}
+										onChange={(event) => setPrice(event.target.value)}
+									/>
+									{price && satoshiPrice === null && (
+										<p className="text-sm text-destructive" role="alert">
+											Enter a positive whole-satoshi price within the safe
+											integer range.
+										</p>
+									)}
+								</div>
+							) : (
+								<p className="text-sm text-muted-foreground" role="status">
+									{LISTING_CREATE_OFF}
+								</p>
+							))}
 					</div>
 				)}
 

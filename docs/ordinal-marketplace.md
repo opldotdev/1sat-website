@@ -40,6 +40,9 @@ query key and open cancellation state is cleared when identity changes.
 Buy and cancel success invalidate wallet balance, market flow, and My Listings
 queries, then refresh server-rendered details.
 
+OrdLock listing create is off (OPL-4694). The wallet and OpNS surfaces hide
+create UI and reject `sell` dispatch. Existing listing buy and cancel stay on.
+
 ## Certification boundary
 
 Automated tests prove typed queries, score pagination, exact price handling,

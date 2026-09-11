@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
+import type { OneSatContext } from "@1sat/actions";
 import { HttpError } from "@1sat/client";
 import {
+	executeOwnedOpnsOperation,
 	normalizeOpnsName,
 	OPNS_CONTENT_TYPE,
 	type OpnsClients,
@@ -14,6 +16,7 @@ import {
 	searchOpnsListings,
 } from "@/lib/opns";
 import { MARKET_PAGE_SIZE } from "@/lib/ordinal-marketplace";
+import { LISTING_CREATE_OFF } from "@/lib/ordlock-listing";
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 const ORIGIN = `${"ab".repeat(32)}.0`;
@@ -214,6 +217,21 @@ describe("provider-neutral OpNS UI boundaries", () => {
 			/createContext\(|wallet-storage|wallet-backup|wallet-migration|indexedDB|rootKey|seedPhrase|PrivateKey/,
 		);
 		assert.doesNotMatch(source, /\/api\/(?:opns|mine|profile|quote)/);
+		assert.match(source, /ORDLOCK_LISTING_CREATE/);
+		assert.match(source, /LISTING_CREATE_OFF/);
+		assert.match(source, /Cancel listing/);
+		assert.match(source, /buyCurrentOpnsListing/);
+	});
+
+	it("rejects OpNS listing create and leaves cancel/buy contracts in place", async () => {
+		assert.deepEqual(
+			await executeOwnedOpnsOperation({} as OneSatContext, {
+				kind: "sell",
+				id: "one",
+				price: 10_000,
+			}),
+			{ error: LISTING_CREATE_OFF },
+		);
 	});
 
 	it("keeps direct claim and unsupported profile resolution explicitly disabled", () => {
