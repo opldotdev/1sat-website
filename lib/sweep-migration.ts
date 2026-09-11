@@ -374,8 +374,8 @@ export async function executeMigrationSweep(
 		);
 	}
 
-	// 2. Ordinals (listed ordinals are swept via OrdLock cancel inside the
-	// action; BSV-20 content is refused by the action's guard)
+	// 2. Ordinals (OPL-4696: listed OrdLock UTXOs cancel via the installed
+	// sweepOrdinals unlock; BSV-20 content is refused by the action's guard)
 	if (ordinalChunks.length > 0) {
 		await sweepChunked(
 			"ordinals",

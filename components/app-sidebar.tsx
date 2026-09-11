@@ -29,6 +29,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { LegacySweepBanner } from "@/components/wallet/legacy-sweep-banner";
+import { ListedCancelBanner } from "@/components/wallet/listed-cancel-banner";
 import { UnlockWalletDialog } from "@/components/wallet/unlock-wallet-dialog";
 import { useCopyWithSound } from "@/hooks/use-copy-with-sound";
 import { useSound } from "@/hooks/use-sound";
@@ -314,6 +315,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			</SidebarHeader>
 			<SidebarSeparator className="my-4" />
 			<SidebarContent>
+				<ListedCancelBanner />
 				<LegacySweepBanner />
 				{navData.map((group) => (
 					<SidebarGroup key={group.title}>

@@ -43,6 +43,10 @@ queries, then refresh server-rendered details.
 OrdLock listing create is off (OPL-4694). The wallet and OpNS surfaces hide
 create UI and reject `sell` dispatch. Existing listing buy and cancel stay on.
 
+On wallet load (OPL-4696), listed OrdLock ordinals and OpNS names are cancelled
+through `cancelOrdinalListing` / `cancelOpnsListing` (cancel→BRC-100). Legacy
+BSV/ordinal sweep still unlocks listed outputs with `OrdLock.cancelListing`.
+
 ## Certification boundary
 
 Automated tests prove typed queries, score pagination, exact price handling,
