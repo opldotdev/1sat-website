@@ -158,6 +158,10 @@ const ListingForm = ({
 				decimals: ticker.dec || 0,
 			};
 
+			// ORDLOCK_LISTING_DISABLED — restore when the replacement listing contract ships.
+			throw new Error(
+				"Listing creation is deprecated pending a replacement contract. Existing listings can still be cancelled or bought.",
+			);
 			const { tx, spentOutpoints, tokenChange, payChange } =
 				await createOrdTokenListings(config);
 

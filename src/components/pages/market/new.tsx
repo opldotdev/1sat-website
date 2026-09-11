@@ -90,6 +90,10 @@ const NewListingPage: React.FC<NewListingPageProps> = ({ type }) => {
 				satsPerKb: SATS_PER_KB,
 			};
 
+			// ORDLOCK_LISTING_DISABLED — restore when the replacement listing contract ships.
+			throw new Error(
+				"Listing creation is deprecated pending a replacement contract. Existing listings can still be cancelled or bought.",
+			);
 			const { tx, spentOutpoints, payChange } = await createOrdListings(config);
 
 			return {
